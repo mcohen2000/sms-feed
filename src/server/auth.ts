@@ -6,8 +6,9 @@ import {
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials"
 
-import { env } from "~/env.mjs";
+// import { env } from "~/env.mjs";
 import { db } from "~/server/db";
+import { compare } from "bcrypt";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -19,8 +20,9 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
-      // role: UserRole;
+      email: string;
+      firstName: string;
+      role: string;
     } & DefaultSession["user"];
   }
 
@@ -37,18 +39,28 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
+    jwt: async ({token, user}) =>{
+      console.log('JWT!!!', token)
+    if(user){
+      token = {...user}
+    }
+    return token
+  },
+    session: ({ session, token }) => ({
       ...session,
       user: {
-        ...session.user,
-        id: user.id,
+        id: token.id,
+        email: token.email,
+        firstName: token.firstName,  
+        lastName: token.lastName, 
+        role: token.role 
       },
     }),
   },
   adapter: PrismaAdapter(db),
-  // pages: {
-  //   signIn: '/admin/login'
-  // },
+  pages: {
+    signIn: '/admin/login'
+  },
   providers: [
     CredentialsProvider({
       // The name to display on the sign in form (e.g. 'Sign in with...')
@@ -58,31 +70,36 @@ export const authOptions: NextAuthOptions = {
       // e.g. domain, username, password, 2FA token, etc.
       // You can pass any HTML attribute to the <input> tag through the object.
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
+        email: { label: "Email", type: "email", placeholder: "your@email.com" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials, req) {
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid.
-        // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-        // You can also use the `req` object to obtain additional parameters
-        // (i.e., the request IP address)
-        const res = await fetch("/your/endpoint", {
-          method: 'POST',
-          body: JSON.stringify(credentials),
-          headers: { "Content-Type": "application/json" }
-        })
-        const user = await res.json()
-  
-        // If no error and we have user data, return it
-        if (res.ok && user) {
-          return user
+        if (!credentials?.email || !credentials?.password){      
+          return null
         }
-        // Return null if user data could not be retrieved
-        return null
-      }
-    })
+        const user = await db.user.findFirst({
+          where: { email: credentials.email }
+        });
+        if(!user){
+          return null;
+        }
+        const checkPassword = await compare(credentials.password, user.password);
+        if(!checkPassword) {
+          return null
+        };
+  
+  
+  
+        return ({
+          id: user.id,
+          email: user.email,
+          firstName: user.first_name,  
+          lastName: user.last_name,
+          role: user.role  
+        });
+        
+    }
+  })
     /**
      * ...add more providers here.
      *
@@ -93,6 +110,10 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  session: {
+    strategy: "jwt"
+  },
+  secret: process.env.NEXTAUTH_SECRET
 };
 
 /**
