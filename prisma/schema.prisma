@@ -21,6 +21,7 @@ model Post {
     updatedAt DateTime @updatedAt
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
+    sentTo Subscriber[] 
 }
 
 // Necessary for Next auth
@@ -60,6 +61,12 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+}
+
+model Subscriber {
+    id            String    @id @default(cuid())
+    phone         String   @unique
+    recieved Post[]
 }
 
 model VerificationToken {
