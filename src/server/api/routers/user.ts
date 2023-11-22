@@ -38,4 +38,26 @@ export const userRouter = createTRPCRouter({
         },
       });
     }),
+  subscribe: publicProcedure
+    .input(z.object({ 
+      phone: z.string().min(10), 
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // simulate a slow db call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const exists = await ctx.db.subscriber.findFirst({
+        where: { phone: input.phone }
+      });
+      if(exists){
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This number is already registered to a user."
+        })
+      };
+      return ctx.db.subscriber.create({
+        data: {
+          phone: input.phone,
+        },
+      });
+    }),
 });
