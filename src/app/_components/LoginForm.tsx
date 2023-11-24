@@ -39,7 +39,7 @@ export function LoginForm() {
       />
       <button
         type="submit"
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
+        className="rounded-full bg-slate-500 px-10 py-3 font-semibold transition hover:bg-slate-600"
         // disabled={createUser.isLoading}
       >
         Submit
