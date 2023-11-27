@@ -1,17 +1,14 @@
 import { api } from "~/trpc/server";
-import Link from "next/link";
-import PostButtons from "./PostButtons";
+import PostItem from "./PostItem";
+
 
 export default async function Dashboard() {
   const allPosts = await api.post.getAll.query();
   return (
     <div className="w-[80%] rounded-md bg-white text-black">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b p-2">
-        <Link href={"/admin/dashboard/new"}>
-          <button className="rounded-md border bg-blue-500 px-2 py-1 text-white">
-            New
-          </button>
-        </Link>
+        <h2 className="text-lg font-bold">Post Manager</h2>
+    
         <div className="flex flex-wrap items-center gap-1">
           Filter:
           <input
@@ -28,15 +25,7 @@ export default async function Dashboard() {
         {allPosts ? (
           allPosts.map((post) => {
             return (
-              <li
-                key={post.id}
-                className="flex w-full items-center justify-between border-b px-2 py-4"
-              >
-                <span className="truncate" title={post.name}>
-                  {post.name}
-                </span>
-                <PostButtons id={post.id}/>
-              </li>
+              <PostItem post={post}/>
             );
           })
         ) : (
