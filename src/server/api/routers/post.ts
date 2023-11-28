@@ -20,7 +20,6 @@ export const postRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       // simulate a slow db call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       return ctx.db.post.create({
         data: {
           name: input.name,
@@ -28,10 +27,15 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
-  getAll: protectedProcedure.query(({ ctx }) => {
+    getAll: protectedProcedure.query(async ({ ctx }) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     return ctx.db.post.findMany({
       orderBy: { createdAt: "desc" },
     });
+  }),
+    delete: protectedProcedure.input(z.object({id: z.string().min(1)})).mutation(async ({ ctx, input }) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return ctx.db.post.delete({where:{ id: input.id}})
   }),
   getLatest: protectedProcedure.query(({ ctx }) => {
     return ctx.db.post.findFirst({
