@@ -70,8 +70,8 @@ export function CreatePost() {
       />
       <button
         type="submit"
-        className="rounded-full border bg-white/10 px-10 py-3 font-semibold transition hover:bg-slate-50"
-        disabled={createPost.isLoading}
+        className="rounded-full border bg-white/10 px-10 py-3 font-semibold transition hover:bg-slate-50 disabled:cursor-not-allowed"
+        disabled={createPost.isLoading || name.length <= 0}
       >
         {createPost.isLoading ? "Submitting..." : "Submit"}
       </button>
