@@ -33,6 +33,15 @@ export const postRouter = createTRPCRouter({
       orderBy: { createdAt: "desc" },
     });
   }),
+    update: protectedProcedure.input(z.object({
+      id: z.string().min(1),
+      name: z.string().min(1),
+    })).mutation(async ({ ctx, input }) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return ctx.db.post.update({where:{ id: input.id}, data: {
+      name: input.name
+    }})
+  }),
     delete: protectedProcedure.input(z.object({id: z.string().min(1)})).mutation(async ({ ctx, input }) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return ctx.db.post.delete({where:{ id: input.id}})
