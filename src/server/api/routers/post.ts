@@ -31,6 +31,9 @@ export const postRouter = createTRPCRouter({
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return ctx.db.post.findMany({
       orderBy: { createdAt: "desc" },
+      include: {
+        sentTo: true
+      }
     });
   }),
     update: protectedProcedure.input(z.object({
