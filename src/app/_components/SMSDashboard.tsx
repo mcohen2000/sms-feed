@@ -1,5 +1,6 @@
 import { api } from "~/trpc/server";
 import PostItem from "./PostItem";
+import PostFilters from "./PostFilters";
 
 
 export default async function Dashboard() {
@@ -8,24 +9,14 @@ export default async function Dashboard() {
     <div className="w-[80%] rounded-md bg-white text-black">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b p-2">
         <h2 className="text-lg font-bold">Post Manager</h2>
-    
-        <div className="flex flex-wrap items-center gap-1">
-          Filter:
-          <input
-            type="text"
-            placeholder="Search"
-            className="rounded-md border px-2 py-1"
-          />
-          <button className="rounded-md border px-2 py-1">Sent</button>
-          <button className="rounded-md border px-2 py-1">Unsent</button>
-        </div>
+        <PostFilters/>
       </div>
 
       <ul className="flex flex-col">
         {allPosts ? (
           allPosts.map((post) => {
             return (
-              <PostItem post={post}/>
+              <PostItem key={post.id} post={post}/>
             );
           })
         ) : (
