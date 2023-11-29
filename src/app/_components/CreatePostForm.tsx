@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { api } from "~/trpc/react";
 
@@ -27,6 +27,19 @@ export function CreatePost() {
     }
     return count;
   }
+  const textAreaRef = useRef<HTMLTextAreaElement>();
+  function updateTextAreaHeight(textArea?: HTMLTextAreaElement){
+    if (textArea == null) return
+    textArea.style.height = "0"
+    textArea.style.height = `${textArea.scrollHeight}px`
+  }
+  const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
+    updateTextAreaHeight(textArea)
+    textAreaRef.current = textArea;
+  }, [])
+  useLayoutEffect(() => {
+    updateTextAreaHeight(textAreaRef.current);
+  }, [name])
 
   return (
     <form
@@ -64,6 +77,7 @@ export function CreatePost() {
       <textarea
         placeholder="Type new post here..."
         id="postInput"
+        ref={inputRef}
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="w-full border px-4 py-2 text-black"
