@@ -27,17 +27,61 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
+    count: protectedProcedure.input(z.object({
+      search: z.string(),
+      sent: z.string(),
+    })).query(async ({ctx, input}) => {
+      if(input.sent === "false"){
+
+        return ctx.db.post.count({
+          where: {
+            name: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            sentTo: {
+              none: {},
+            },
+          }
+        })
+      }
+      if(input.sent === "true"){
+
+        return ctx.db.post.count({
+          where: {
+            name: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            sentTo: {
+              some: {},
+            },
+          }
+        })
+      }
+      return ctx.db.post.count({
+        where: {
+          name: {
+            contains: input.search || "",
+            mode: "insensitive",
+          },
+        }
+      })
+  }),
   getAll: protectedProcedure
     .input(
       z.object({
         search: z.string(),
         sent: z.string(),
+        page: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       if (input.sent === "false") {
         return ctx.db.post.findMany({
+          skip: 5*(parseInt(input.page)-1) || 0,
+          take: 5,
           orderBy: { createdAt: "desc" },
           include: {
             sentTo: true,
@@ -71,6 +115,8 @@ export const postRouter = createTRPCRouter({
         });
       }
       return ctx.db.post.findMany({
+        skip: (5*(parseInt(input.page)-1)) || 0,
+        take: 5,
         orderBy: { createdAt: "desc" },
         where: {
           name: {
