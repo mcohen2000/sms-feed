@@ -52,13 +52,7 @@ export default function PostItem(props: { post: PostWithSent }) {
   }, [text])
   return (
     <li
-      className={`flex w-full flex-col items-start justify-between text-left truncate gap-4 border-b px-2 py-4 ${
-        (search && !post.name.includes(search)) ||
-        (sent === "true" && post.sentTo.length === 0) ||
-        (sent === "false" && post.sentTo.length !== 0)
-          ? "hidden"
-          : ""
-      } `}
+      className={`flex w-full flex-col items-start justify-between text-left truncate gap-4 border-b px-2 py-4`}
     >
       {isEditing ? (
         <>

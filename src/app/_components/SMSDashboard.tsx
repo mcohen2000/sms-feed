@@ -3,8 +3,8 @@ import PostItem from "./PostItem";
 import PostFilters from "./PostFilters";
 
 
-export default async function Dashboard() {
-  const allPosts = await api.post.getAll.query();
+export default async function Dashboard(searchParams: { [key: string]: string | undefined }) {
+  const allPosts = await api.post.getAll.query({search: searchParams.search || "", sent: searchParams.sent || ""});
   return (
     <div className="w-[80%] rounded-md bg-white text-black">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b p-2">
