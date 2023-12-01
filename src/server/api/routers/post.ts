@@ -27,28 +27,84 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
-    getAll: protectedProcedure.query(async ({ ctx }) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return ctx.db.post.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        sentTo: true
+  getAll: protectedProcedure
+    .input(
+      z.object({
+        search: z.string(),
+        sent: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (input.sent === "false") {
+        return ctx.db.post.findMany({
+          orderBy: { createdAt: "desc" },
+          include: {
+            sentTo: true,
+          },
+          where: {
+            name: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            sentTo: {
+              none: {},
+            },
+          },
+        });
       }
-    });
-  }),
-    update: protectedProcedure.input(z.object({
-      id: z.string().min(1),
-      name: z.string().min(1),
-    })).mutation(async ({ ctx, input }) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return ctx.db.post.update({where:{ id: input.id}, data: {
-      name: input.name
-    }})
-  }),
-    delete: protectedProcedure.input(z.object({id: z.string().min(1)})).mutation(async ({ ctx, input }) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return ctx.db.post.delete({where:{ id: input.id}})
-  }),
+      if (input.sent === "true") {
+        return ctx.db.post.findMany({
+          orderBy: { createdAt: "desc" },
+          include: {
+            sentTo: true,
+          },
+          where: {
+            name: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            sentTo: {
+              some: {},
+            },
+          },
+        });
+      }
+      return ctx.db.post.findMany({
+        orderBy: { createdAt: "desc" },
+        where: {
+          name: {
+            contains: input.search || "",
+            mode: "insensitive",
+          },
+        },
+        include: {
+          sentTo: true,
+        },
+      });
+    }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return ctx.db.post.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return ctx.db.post.delete({ where: { id: input.id } });
+    }),
   getLatest: protectedProcedure.query(({ ctx }) => {
     return ctx.db.post.findFirst({
       orderBy: { createdAt: "desc" },
