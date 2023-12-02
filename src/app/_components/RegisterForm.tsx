@@ -31,33 +31,33 @@ export function RegisterForm() {
         placeholder="First Name"
         value={firstName}
         onChange={(e) => setFirstName(e.target.value)}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-full px-4 py-2 text-black border"
       />
       <input
         type="text"
         placeholder="Last Name"
         value={lastName}
         onChange={(e) => setLastName(e.target.value)}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-full px-4 py-2 text-black border"
       />
       <input
         type="text"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-full px-4 py-2 text-black border"
       />
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-full px-4 py-2 text-black border"
       />
       <button
         type="submit"
-        className="rounded-full bg-slate-500 px-10 py-3 font-semibold transition hover:bg-slate-600"
-        disabled={createUser.isLoading}
+        className="rounded-full border bg-white/10 px-10 py-3 font-semibold transition hover:bg-slate-50 disabled:cursor-not-allowed"
+        disabled={createUser.isLoading || !firstName || !lastName || !email || !password}
       >
         {createUser.isLoading ? "Submitting..." : "Submit"}
       </button>
