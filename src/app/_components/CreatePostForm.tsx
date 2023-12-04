@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { countCharacters } from "../_utils/countCharacters";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { api } from "~/trpc/react";
@@ -15,18 +16,6 @@ export function CreatePost() {
       router.refresh();
     },
   });
-  function countCharacters(str: String) {
-    let count = 0;
-    for (let i = 0; i < str.length; i++) {
-      if (str[i] === "\n") {
-        count += 2;
-      }
-      if (str[i] !== "\n") {
-        count++;
-      }
-    }
-    return count;
-  }
   const textAreaRef = useRef<HTMLTextAreaElement>();
   function updateTextAreaHeight(textArea?: HTMLTextAreaElement){
     if (textArea == null) return
@@ -47,7 +36,7 @@ export function CreatePost() {
         e.preventDefault();
         createPost.mutate({ name });
       }}
-      className="flex w-[80%] flex-col gap-2 rounded-md bg-white p-2 text-black"
+      className="flex w-full flex-col gap-2 rounded-md bg-white p-4 text-black"
     >
       <label htmlFor="postInput" className="text-lg font-bold">
         Create Post

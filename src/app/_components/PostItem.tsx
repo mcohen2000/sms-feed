@@ -2,30 +2,16 @@
 
 import { Prisma } from "@prisma/client";
 import { api } from "~/trpc/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { countCharacters } from "../_utils/countCharacters";
+import { useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 type PostWithSent = Prisma.PostGetPayload<{ include: { sentTo: true } }>;
 
 export default function PostItem(props: { post: PostWithSent }) {
   const post = props.post;
-  const searchParams = useSearchParams();
-  const search = searchParams.get("search");
-  const sent = searchParams.get("sent");
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(post.name);
-  function countCharacters(str: String) {
-    let count = 0;
-    for (let i = 0; i < str.length; i++) {
-      if (str[i] === "\n") {
-        count += 2;
-      }
-      if (str[i] !== "\n") {
-        count++;
-      }
-    }
-    return count;
-  }
   const updatePost = api.post.update.useMutation({
     onSuccess: () => {
       setIsEditing(false);
@@ -52,7 +38,7 @@ export default function PostItem(props: { post: PostWithSent }) {
   }, [text])
   return (
     <li
-      className={`flex w-full flex-col items-start justify-between text-left truncate gap-4 border-b px-2 py-4`}
+      className={`flex w-full flex-col items-start justify-between text-left truncate gap-4 border-b px-4 py-4`}
     >
       {isEditing ? (
         <>
