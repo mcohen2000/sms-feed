@@ -1,5 +1,4 @@
 "use client";
-import { api } from "~/trpc/react";
 import {
   AreaChart,
   XAxis,
@@ -10,18 +9,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function MonthlySubscriberChart() {
-  type MonthlyStatistic = {
-    monthyear: String;
-    signupscount: Number;
-  };
-  const monthlyData = api.user.subscriberMonthlyCount.useQuery<MonthlyStatistic[]>();
+type MonthlyStatistic = {
+  monthyear: String;
+  signupscount: Number;
+};
+export default function MonthlySubscriberChart(data: {monthlyData: MonthlyStatistic[]}) {
   return (
     <div className="h-[50vh] w-full rounded-md bg-white p-4">
       <p className="text-lg font-bold text-black">Monthly Sign Ups:</p>
       <ResponsiveContainer>
         <AreaChart
-          data={monthlyData.data}
+          data={data.monthlyData}
           margin={{ top: 20, right: 20, left: -20, bottom: 30 }}
         >
           <defs>
