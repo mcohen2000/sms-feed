@@ -72,13 +72,13 @@ export const userRouter = createTRPCRouter({
   subscriberMonthlyCount: protectedProcedure.query(async ({ ctx }) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return ctx.db.$queryRaw`SELECT 
-      DATE_TRUNC('month', "createdAt") AS month,
-      COUNT(*) AS signUpsCount
+      TO_CHAR("createdAt", 'MM-YYYY') AS monthYear,
+      COUNT(*)::numeric AS signUpsCount
     FROM
       public."Subscriber"
     GROUP BY
-      month
+      monthYear
     ORDER BY
-      month ASC;`;
+      monthYear ASC;`;
   }),
 });
