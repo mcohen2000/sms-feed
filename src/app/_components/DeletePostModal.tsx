@@ -16,6 +16,7 @@ export default function DeletePostModal(props: {
     onSuccess: () => {
       router.refresh();
       setIsDeleting(false);
+      document.body.classList.remove("overflow-y-hidden");
     },
   });
   useEffect(() => {
@@ -23,33 +24,40 @@ export default function DeletePostModal(props: {
       const targetNode = e.target as Node;
       if (modalRef.current && !modalRef.current.contains(targetNode)) {
         setIsDeleting(false);
-        document.body.style.overflow = "";
+        document.body.classList.remove("overflow-y-hidden");
       }
     }
     function onEscapeKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsDeleting(false);
-        document.body.style.overflow = "";
+        document.body.classList.remove("overflow-y-hidden");
       }
     }
     if (isDeleting) {
+      document.body.classList.add("overflow-y-hidden");
       document.addEventListener("mouseup", handleClickOff, true);
       document.addEventListener("keydown", onEscapeKey, true);
-    }
+    } 
     return () => {
       document.removeEventListener("mouseup", handleClickOff, true);
       document.removeEventListener("keydown", onEscapeKey, true);
     };
   }, [isDeleting]);
   return (
-    <div className="absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black/50">
-      <div className="flex w-[500px] flex-col items-center justify-center gap-4 rounded-md bg-white p-4" ref={modalRef}>
+    <div className="fixed bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black/50">
+      <div
+        className="flex w-[500px] flex-col items-center justify-center gap-4 rounded-md bg-white p-4"
+        ref={modalRef}
+      >
         <div className="w-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className="fill-black hover:fill-red-500 h-6 w-6 cursor-pointer"
-            onClick={() => setIsDeleting(false)}
+            className="h-6 w-6 cursor-pointer fill-black hover:fill-red-500"
+            onClick={() => {
+                setIsDeleting(false);
+                document.body.classList.remove("overflow-y-hidden");
+            }}
           >
             <path
               fillRule="evenodd"
