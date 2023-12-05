@@ -5,21 +5,18 @@ import { api } from "~/trpc/react";
 import { countCharacters } from "../_utils/countCharacters";
 import { useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import DeletePostModal from "./DeletePostModal";
 type PostWithSent = Prisma.PostGetPayload<{ include: { sentTo: true } }>;
 
 export default function PostItem(props: { post: PostWithSent }) {
   const post = props.post;
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [text, setText] = useState(post.name);
   const updatePost = api.post.update.useMutation({
     onSuccess: () => {
       setIsEditing(false);
-      router.refresh();
-    },
-  });
-  const deletePost = api.post.delete.useMutation({
-    onSuccess: () => {
       router.refresh();
     },
   });
@@ -40,6 +37,7 @@ export default function PostItem(props: { post: PostWithSent }) {
     <li
       className={`flex w-full flex-col items-start justify-between text-left truncate gap-4 border-b px-4 py-4`}
     >
+      {isDeleting ? <DeletePostModal id={post.id} isDeleting={isDeleting} setIsDeleting={setIsDeleting}/> : null}
       {isEditing ? (
         <>
           <div className="flex w-full flex-wrap items-center justify-between gap-2">
@@ -92,10 +90,9 @@ export default function PostItem(props: { post: PostWithSent }) {
             </button>
             <button
               className="min-w-[72px] rounded-md border bg-red-500 px-2 py-1"
-              onClick={() => deletePost.mutate({ id: post.id })}
-              disabled={deletePost.isLoading}
+              onClick={() => setIsDeleting(true)}
             >
-              {deletePost.isLoading ? "Deleting..." : "Delete"}
+              Delete
             </button>
           </span>
         </>
