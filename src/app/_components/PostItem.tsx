@@ -6,13 +6,15 @@ import { countCharacters } from "../_utils/countCharacters";
 import { useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import DeletePostModal from "./DeletePostModal";
+import SendPostModal from "./SendPostModal";
 type PostWithSent = Prisma.PostGetPayload<{ include: { sentTo: true } }>;
 
 export default function PostItem(props: { post: PostWithSent }) {
   const post = props.post;
   const router = useRouter();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [isSending, setIsSending] = useState<boolean>(false);
   const [text, setText] = useState(post.name);
   const updatePost = api.post.update.useMutation({
     onSuccess: () => {
@@ -21,23 +23,36 @@ export default function PostItem(props: { post: PostWithSent }) {
     },
   });
   const textAreaRef = useRef<HTMLTextAreaElement>();
-  function updateTextAreaHeight(textArea?: HTMLTextAreaElement){
-    if (textArea == null) return
-    textArea.style.height = "0"
-    textArea.style.height = `${textArea.scrollHeight}px`
+  function updateTextAreaHeight(textArea?: HTMLTextAreaElement) {
+    if (textArea == null) return;
+    textArea.style.height = "0";
+    textArea.style.height = `${textArea.scrollHeight}px`;
   }
   const inputRef = useCallback((textArea: HTMLTextAreaElement) => {
-    updateTextAreaHeight(textArea)
+    updateTextAreaHeight(textArea);
     textAreaRef.current = textArea;
-  }, [])
+  }, []);
   useLayoutEffect(() => {
     updateTextAreaHeight(textAreaRef.current);
-  }, [text])
+  }, [text]);
   return (
     <li
-      className={`flex w-full flex-col items-start justify-between text-left truncate gap-4 border-b px-4 py-4`}
+      className={`flex w-full flex-col items-start justify-between gap-4 truncate border-b px-4 py-4 text-left`}
     >
-      {isDeleting ? <DeletePostModal id={post.id} isDeleting={isDeleting} setIsDeleting={setIsDeleting}/> : null}
+      {isSending ? (
+        <SendPostModal
+          post={post}
+          isSending={isSending}
+          setIsSending={setIsSending}
+        />
+      ) : null}
+      {isDeleting ? (
+        <DeletePostModal
+          id={post.id}
+          isDeleting={isDeleting}
+          setIsDeleting={setIsDeleting}
+        />
+      ) : null}
       {isEditing ? (
         <>
           <div className="flex w-full flex-wrap items-center justify-between gap-2">
@@ -57,7 +72,7 @@ export default function PostItem(props: { post: PostWithSent }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
-          <span className="flex gap-1 pl-1 self-center">
+          <span className="flex gap-1 self-center pl-1">
             <button
               className="min-w-[72px] rounded-md border bg-green-500 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => updatePost.mutate({ id: post.id, name: text })}
@@ -75,11 +90,17 @@ export default function PostItem(props: { post: PostWithSent }) {
         </>
       ) : (
         <>
-          <p className="w-full truncate" title={text !== post.name  ? "Updating...": post.name}>
-            {text !== post.name ? "Updating...": post.name}
+          <p
+            className="w-full truncate"
+            title={text !== post.name ? "Updating..." : post.name}
+          >
+            {text !== post.name ? "Updating..." : post.name}
           </p>
-          <span className="flex gap-1 pl-1 self-center">
-            <button className="min-w-[72px] rounded-md border bg-green-500 px-2 py-1">
+          <span className="flex gap-1 self-center pl-1">
+            <button
+              className="min-w-[72px] rounded-md border bg-green-500 px-2 py-1"
+              onClick={() => setIsSending(true)}
+            >
               Send
             </button>
             <button

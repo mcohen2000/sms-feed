@@ -151,6 +151,15 @@ export const postRouter = createTRPCRouter({
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return ctx.db.post.delete({ where: { id: input.id } });
     }),
+  send: protectedProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .mutation(async ({ctx, input}) => {
+      const post = ctx.db.post.findFirst({
+        where: { id: input.id },
+      });
+      return post
+
+    }),
   getLatest: protectedProcedure.query(({ ctx }) => {
     return ctx.db.post.findFirst({
       orderBy: { createdAt: "desc" },
