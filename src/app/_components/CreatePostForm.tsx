@@ -8,11 +8,11 @@ import { api } from "~/trpc/react";
 
 export function CreatePost() {
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [text, setText] = useState("");
 
   const createPost = api.post.create.useMutation({
     onSuccess: () => {
-      setName("");
+      setText("");
       router.refresh();
     },
   });
@@ -28,13 +28,13 @@ export function CreatePost() {
   }, [])
   useLayoutEffect(() => {
     updateTextAreaHeight(textAreaRef.current);
-  }, [name])
+  }, [text])
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        createPost.mutate({ name });
+        createPost.mutate({ text });
       }}
       className="flex w-full flex-col gap-2 rounded-md bg-white p-4 text-black"
     >
@@ -54,12 +54,12 @@ export function CreatePost() {
       </ul>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold">
-          Character Count: {countCharacters(name)}
+          Character Count: {countCharacters(text)}
         </p>
         <p className="font-semibold">
           SMS Count:{" "}
-          {countCharacters(name) > 160
-            ? Math.ceil(countCharacters(name) / 153)
+          {countCharacters(text) > 160
+            ? Math.ceil(countCharacters(text) / 153)
             : 1}
         </p>
       </div>
@@ -67,14 +67,14 @@ export function CreatePost() {
         placeholder="Type new post here..."
         id="postInput"
         ref={inputRef}
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
         className="w-full border px-4 py-2 text-black"
       />
       <button
         type="submit"
         className="rounded-full border bg-white/10 px-10 py-3 font-semibold transition hover:bg-slate-50 disabled:cursor-not-allowed"
-        disabled={createPost.isLoading || name.length <= 0}
+        disabled={createPost.isLoading || text.length <= 0}
       >
         {createPost.isLoading ? "Submitting..." : "Submit"}
       </button>

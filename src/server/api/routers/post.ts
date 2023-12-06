@@ -16,13 +16,13 @@ export const postRouter = createTRPCRouter({
     }),
 
   create: protectedProcedure
-    .input(z.object({ name: z.string().min(1).max(160) }))
+    .input(z.object({ text: z.string().min(1).max(1530) }))
     .mutation(async ({ ctx, input }) => {
       // simulate a slow db call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return ctx.db.post.create({
         data: {
-          name: input.name,
+          text: input.text,
           createdBy: { connect: { id: ctx.session.user.id } },
         },
       });
@@ -35,7 +35,7 @@ export const postRouter = createTRPCRouter({
 
         return ctx.db.post.count({
           where: {
-            name: {
+            text: {
               contains: input.search || "",
               mode: "insensitive",
             },
@@ -49,7 +49,7 @@ export const postRouter = createTRPCRouter({
 
         return ctx.db.post.count({
           where: {
-            name: {
+            text: {
               contains: input.search || "",
               mode: "insensitive",
             },
@@ -61,7 +61,7 @@ export const postRouter = createTRPCRouter({
       }
       return ctx.db.post.count({
         where: {
-          name: {
+          text: {
             contains: input.search || "",
             mode: "insensitive",
           },
@@ -87,7 +87,7 @@ export const postRouter = createTRPCRouter({
             sentTo: true,
           },
           where: {
-            name: {
+            text: {
               contains: input.search || "",
               mode: "insensitive",
             },
@@ -104,7 +104,7 @@ export const postRouter = createTRPCRouter({
             sentTo: true,
           },
           where: {
-            name: {
+            text: {
               contains: input.search || "",
               mode: "insensitive",
             },
@@ -119,7 +119,7 @@ export const postRouter = createTRPCRouter({
         take: 5,
         orderBy: { createdAt: "desc" },
         where: {
-          name: {
+          text: {
             contains: input.search || "",
             mode: "insensitive",
           },
@@ -133,7 +133,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string().min(1),
-        name: z.string().min(1),
+        text: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -141,7 +141,7 @@ export const postRouter = createTRPCRouter({
       return ctx.db.post.update({
         where: { id: input.id },
         data: {
-          name: input.name,
+          text: input.text,
         },
       });
     }),

@@ -15,7 +15,7 @@ export default function PostItem(props: { post: PostWithSent }) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
-  const [text, setText] = useState(post.name);
+  const [text, setText] = useState(post.text);
   const updatePost = api.post.update.useMutation({
     onSuccess: () => {
       setIsEditing(false);
@@ -75,8 +75,8 @@ export default function PostItem(props: { post: PostWithSent }) {
           <span className="flex gap-1 self-center pl-1">
             <button
               className="min-w-[72px] rounded-md border bg-green-500 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={() => updatePost.mutate({ id: post.id, name: text })}
-              disabled={updatePost.isLoading || post.name === text}
+              onClick={() => updatePost.mutate({ id: post.id, text: text })}
+              disabled={updatePost.isLoading || post.text === text}
             >
               {updatePost.isLoading ? "Saving..." : "Save"}
             </button>
@@ -92,9 +92,9 @@ export default function PostItem(props: { post: PostWithSent }) {
         <>
           <p
             className="w-full truncate"
-            title={text !== post.name ? "Updating..." : post.name}
+            title={text !== post.text ? "Updating..." : post.text}
           >
-            {text !== post.name ? "Updating..." : post.name}
+            {text !== post.text ? "Updating..." : post.text}
           </p>
           <span className="flex gap-1 self-center pl-1">
             <button
