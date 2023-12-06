@@ -24,7 +24,6 @@ export default function SendPostModal(props: {
       document.body.classList.remove("overflow-y-hidden");
     },
   });
-  console.log(post.name.split("\n"));
   useEffect(() => {
     function handleClickOff(e: MouseEvent) {
       const targetNode = e.target as Node;
@@ -75,20 +74,20 @@ export default function SendPostModal(props: {
         <div className="flex w-full flex-col gap-2">
           <div className="flex w-full flex-wrap items-center justify-between gap-2">
             <p className="font-semibold">
-              Character Count: {countCharacters(post.name)}
+              Character Count: {countCharacters(post.text)}
             </p>
             <p className="font-semibold">
               SMS Count:{" "}
-              {countCharacters(post.name) > 160
-                ? Math.ceil(countCharacters(post.name) / 153)
+              {countCharacters(post.text) > 160
+                ? Math.ceil(countCharacters(post.text) / 153)
                 : 1}
             </p>
           </div>
           <div className="w-full">
             <p className="font-semibold">Text:</p>
             <div className="flex flex-col gap-3 border px-2 py-1">
-              {post.name.split("\n").map((text) => (
-                <p className="whitespace-normal">{text}</p>
+              {post.text.split("\n").map((text, index) => (
+                <p className="whitespace-normal" key={index}>{text}</p>
               ))}
             </div>
           </div>
