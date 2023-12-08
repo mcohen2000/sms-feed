@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { hash } from "bcrypt";
+import twilio from "twilio";
 
 import {
   createTRPCRouter,
@@ -59,6 +60,12 @@ export const userRouter = createTRPCRouter({
           message: "This number is already registered to a user.",
         });
       }
+      const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      twilioClient.messages.create({
+        body: `Welcome to the T3 SMS Feed!\nReply with "STOP" to unsubscribe.`,
+        to: input.phone,
+        messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+      }).then( message => console.log(message))
       return ctx.db.subscriber.create({
         data: {
           phone: input.phone,
