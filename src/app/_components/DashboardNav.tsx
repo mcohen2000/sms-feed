@@ -3,7 +3,6 @@ import Link from "next/link";
 export default function DashboardNav(searchParams: {
   [key: string]: string | undefined;
 }) {
-  console.log(searchParams);
   let view = searchParams.view || "posts";
   return (
     <div className="flex w-full items-center justify-evenly bg-white p-4 text-gray-500 rounded-md">

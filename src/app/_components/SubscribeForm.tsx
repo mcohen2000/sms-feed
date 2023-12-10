@@ -35,7 +35,6 @@ export function SubscribeForm() {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        console.log("SUBSCRIBE!!!", phone);
         subscribeUser.mutate({ phone: `+1${phone}` });
       }}
       className="flex flex-col gap-2"
