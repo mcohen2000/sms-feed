@@ -5,6 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import twilio from "twilio";
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
@@ -154,10 +155,41 @@ export const postRouter = createTRPCRouter({
   send: protectedProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ctx, input}) => {
-      const post = ctx.db.post.findFirst({
+      const post = await ctx.db.post.findFirst({
         where: { id: input.id },
+        include: { sentTo: true }
       });
-      return post
+      if (post && post.text){
+
+        const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+        const subscribers = await ctx.db.subscriber.findMany({ include: { recieved: true }});
+        subscribers.forEach(person => {
+          twilioClient.messages.create({
+            body: `${post.text}`,
+            to: person.phone,
+            messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+          }).then( async (message) => {
+            if(message.status === "accepted"){
+              await ctx.db.subscriber.update({ 
+                where: {id: person.id},
+                include: { recieved: true },
+                data: {
+                  recieved: {connect: {id: post.id}}
+                }
+              })
+              await ctx.db.post.update({ 
+                where: {id: post.id},
+                include: { sentTo: true },
+                data: {
+                  sentTo: {connect: {id: person.id}}
+                }
+              })
+            }
+          })
+          
+        })
+        return subscribers.length
+      }
 
     }),
   getLatest: protectedProcedure.query(({ ctx }) => {
