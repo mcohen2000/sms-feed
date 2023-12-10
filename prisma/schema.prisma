@@ -21,7 +21,7 @@ model Post {
     updatedAt DateTime @updatedAt
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
-    sentTo Subscriber[] 
+    sentTo Subscriber[] @relation("SentToSubscribers")
 }
 
 // Necessary for Next auth
@@ -67,7 +67,7 @@ model Subscriber {
     id            String    @id @default(cuid())
     phone         String   @unique
     createdAt DateTime @default(now())
-    recieved Post[]
+    recieved Post[] @relation("SentToSubscribers")
 }
 
 model VerificationToken {
