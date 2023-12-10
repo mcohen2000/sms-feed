@@ -39,8 +39,7 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    jwt: async ({token, user}) =>{
-      console.log('JWT!!!', token)
+    jwt: async ({token, user}) => {
     if(user){
       token = {...user}
     }
