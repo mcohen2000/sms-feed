@@ -40,9 +40,16 @@ declare module "next-auth" {
 export const authOptions: NextAuthOptions = {
   callbacks: {
     jwt: async ({token, user}) => {
-    if(user){
-      token = {...user}
-    }
+      const dbUser = await db.user.findFirst({
+        where: { email: token.email }
+      });
+      if(user){
+        token = {...user}
+      }
+      // keep role synced with db
+      if (dbUser){
+        token.role = dbUser.role;
+      }
     return token
   },
     session: ({ session, token }) => ({
