@@ -14,6 +14,10 @@ export default function SendPostModal(props: {
   setIsSending: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [sendInput, setSendInput] = useState("");
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [error, setError] = useState("");
   const { post, isSending, setIsSending } = props;
   const router = useRouter();
   const modalRef = useRef<HTMLDivElement>(null);
@@ -21,7 +25,12 @@ export default function SendPostModal(props: {
     onSuccess: () => {
       router.refresh();
       setIsSending(false);
+      setError("");
       document.body.classList.remove("overflow-y-hidden");
+    },
+    onError: (error) => {
+      // handle date/time error
+      setError(error.message);
     },
   });
   useEffect(() => {
@@ -51,7 +60,7 @@ export default function SendPostModal(props: {
   return (
     <div className="fixed bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black/50">
       <div
-        className="flex w-[500px] flex-col items-center justify-center gap-4 rounded-md bg-white p-4"
+        className="flex w-[500px] max-w-full max-h-full overflow-auto flex-col items-center justify-start gap-4 rounded-md bg-white p-4"
         ref={modalRef}
       >
         <div className="w-full">
@@ -87,7 +96,9 @@ export default function SendPostModal(props: {
             <p className="font-semibold">Text:</p>
             <div className="flex flex-col gap-3 border px-2 py-1">
               {post.text.split("\n").map((text, index) => (
-                <p className="whitespace-normal" key={index}>{text}</p>
+                <p className="whitespace-normal" key={index}>
+                  {text}
+                </p>
               ))}
             </div>
           </div>
@@ -100,10 +111,96 @@ export default function SendPostModal(props: {
           placeholder="Type here..."
           onChange={(e) => setSendInput(e.target.value)}
         />
+        <div className="flex flex-col items-center justify-center gap-2">
+          <label htmlFor="scheduleCheckbox" className="whitespace-normal">
+            Would you like to schedule this message?
+          </label>
+          <input
+            id="scheduleCheckbox"
+            type="checkbox"
+            checked={isScheduled}
+            onChange={(e) => setIsScheduled((prev) => !prev)}
+          />
+        </div>
+        {isScheduled ? (
+          <>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <label htmlFor="scheduleDate" className="w-full font-semibold">
+                Date:
+              </label>
+              <ul className="list-inside list-disc">
+                <li
+                  className={`whitespace-normal ${
+                    error.includes("date") ? "text-red-600" : ""
+                  }`}
+                >
+                  Messages must be scheduled no more than 7 days before the
+                  intended send time.
+                </li>
+              </ul>
+              <input
+                id="scheduleDate"
+                type="date"
+                className={`w-[165px] border p-2 text-center ${
+                  error.includes("date") ? "border-red-600 text-red-600" : ""
+                }`}
+                value={date}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setError("");
+                }}
+                required
+              />
+            </div>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <label htmlFor="scheduleTime" className="w-full font-semibold">
+                Time (EST):
+              </label>
+              <ul className="list-inside list-disc">
+                <li
+                  className={`whitespace-normal ${
+                    error.includes("time") ? "text-red-600" : ""
+                  }`}
+                >
+                  Messages must be scheduled at least 15 minutes before the
+                  intended send time.
+                </li>
+              </ul>
+              <input
+                id="scheduleTime"
+                type="time"
+                className={`w-[165px] border p-2 text-center ${
+                  error.includes("time") ? "border-red-600 text-red-600" : ""
+                }`}
+                min={new Date(Date.now() + 15 * 60 * 1000)
+                  .toLocaleTimeString("en-GB", { timeZone: "America/New_York" })
+                  .slice(0, -3)}
+                value={time}
+                onChange={(e) => {
+                  setTime(e.target.value);
+                  setError("");
+                }}
+                required
+              />
+            </div>
+          </>
+        ) : null}
         <button
           className="min-w-[72px] rounded-md border bg-green-500 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
-          onClick={() => sendPost.mutate({ id: post.id })}
-          disabled={sendPost.isLoading || sendInput !== "send"}
+          onClick={() =>
+            sendPost.mutate({
+              id: post.id,
+              schedule: isScheduled
+                ? new Date(`${date}T${time}:00.000-05:00`).toISOString()
+                : "",
+            })
+          }
+          disabled={
+            sendPost.isLoading ||
+            sendInput !== "send" ||
+            (isScheduled ? date === "" || time === "" : false) ||
+            error !== ""
+          }
         >
           {sendPost.isLoading ? "Sending..." : "Send"}
         </button>

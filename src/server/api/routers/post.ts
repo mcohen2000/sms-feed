@@ -6,6 +6,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import twilio from "twilio";
+import { TRPCError } from "@trpc/server";
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
@@ -153,23 +154,43 @@ export const postRouter = createTRPCRouter({
       return ctx.db.post.delete({ where: { id: input.id } });
     }),
   send: protectedProcedure
-    .input(z.object({ id: z.string().min(1) }))
+    .input(z.object({ id: z.string().min(1), schedule: z.string() }))
     .mutation(async ({ctx, input}) => {
       const post = await ctx.db.post.findFirst({
         where: { id: input.id },
         include: { sentTo: true }
       });
       if (post && post.text){
+        if (input.schedule){
+          if(Date.parse(input.schedule) - Date.now() < 15*60*1000){
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Scheduled time is less than 15 minutes from current time.",
+            });
+          }
+          if(Date.parse(input.schedule) - Date.now() > 7*24*60*60*1000){
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Scheduled date is more than 7 days from current date.",
+            });
+          }
+        }
 
         const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
         const subscribers = await ctx.db.subscriber.findMany({ include: { recieved: true }});
         subscribers.forEach(person => {
-          twilioClient.messages.create({
+          twilioClient.messages.create(input.schedule ? {
+            body: `${post.text}`,
+            to: person.phone,
+            sendAt: new Date(input.schedule),
+            scheduleType: "fixed",
+            messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+          }: {
             body: `${post.text}`,
             to: person.phone,
             messagingServiceSid: process.env.TWILIO_SERVICE_SID,
           }).then( async (message) => {
-            if(message.status === "accepted"){
+            if(message.status === "accepted" || message.status === "scheduled"){
               await ctx.db.subscriber.update({ 
                 where: {id: person.id},
                 include: { recieved: true },
