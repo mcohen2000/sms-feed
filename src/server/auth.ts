@@ -3,7 +3,9 @@ import {
   getServerSession,
   type DefaultSession,
   type NextAuthOptions,
+  User,
 } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials"
 
 // import { env } from "~/env.mjs";
@@ -16,20 +18,33 @@ import { compare } from "bcrypt";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  }
+}
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
       email: string;
       firstName: string;
+      lastName: string;
       role: string;
     } & DefaultSession["user"];
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  
+  interface User {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  }
 }
 
 /**
@@ -39,9 +54,10 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    jwt: async ({token, user}) => {
+    jwt: async ({token, user}:{token: JWT, user: User}): Promise<JWT> => {
+      console.log("TOKEN BEFORE:", token)
       const dbUser = await db.user.findFirst({
-        where: { email: token.email }
+        where: { id: token.id }
       });
       if(user){
         token = {...user}
@@ -50,6 +66,7 @@ export const authOptions: NextAuthOptions = {
       if (dbUser){
         token.role = dbUser.role;
       }
+      console.log("TOKEN AFTER:", token)
     return token
   },
     session: ({ session, token }) => ({
@@ -79,7 +96,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email", placeholder: "your@email.com" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials, req) {
+      async authorize(credentials, req): Promise<any> {
         if (!credentials?.email || !credentials?.password){      
           return null
         }
