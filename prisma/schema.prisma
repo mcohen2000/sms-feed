@@ -11,17 +11,17 @@ datasource db {
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
     // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url = env("DATABASE_URL")
+    url      = env("DATABASE_URL")
 }
 
 model Post {
-    id        String      @id @default(cuid())
-    text      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-    sentTo Subscriber[] @relation("SentToSubscribers")
+    id                String            @id @default(cuid())
+    text              String
+    createdAt         DateTime          @default(now())
+    updatedAt         DateTime          @updatedAt
+    createdBy         User              @relation(fields: [createdById], references: [id])
+    createdById       String
+    OutboundWebhook   OutboundWebhook[] @relation(name: "SentTo")
 }
 
 // Necessary for Next auth
@@ -52,22 +52,64 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    first_name          String?
-    last_name          String?
-    email         String?   @unique
-    password      String
-    role      String @default("user")
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+    id         String    @id @default(cuid())
+    first_name String
+    last_name  String
+    email      String   @unique
+    password   String
+    role       String    @default("user")
+    accounts   Account[]
+    sessions   Session[]
+    posts      Post[]
 }
 
 model Subscriber {
-    id            String    @id @default(cuid())
-    phone         String   @unique
-    createdAt DateTime @default(now())
-    recieved Post[] @relation("SentToSubscribers")
+    id                String            @id @default(cuid())
+    phone             String            @unique
+    createdAt         DateTime          @default(now())
+    optedOut          Boolean           @default(false)
+    OutboundWebhook   OutboundWebhook[] @relation(name: "received")
+    InboundWebhook    InboundWebhook[]
+}
+
+model OutboundWebhook {
+    id                  String     @id @default(cuid())
+    apiVersion          String
+    rawDlrDoneDate      DateTime?
+    smsSid              String
+    smsStatus           String
+    to                  String
+    from                String?
+    createdAt           DateTime   @default(now())
+    updatedAt           DateTime   @updatedAt
+    post                Post       @relation(fields: [postId], references: [id], name: "SentTo")
+    postId              String
+    subscriber          Subscriber @relation(fields: [subscriberId], references: [id], name: "received")
+    subscriberId        String
+}
+
+model InboundWebhook {
+    id                  String     @id @default(cuid())
+    toCountry           String
+    toState             String
+    smsMessageSid       String
+    numMedia            Int
+    toCity              String
+    fromZip             String
+    smsSid              String
+    optOutType          String?
+    fromState           String
+    smsStatus           String
+    fromCity            String
+    body                String
+    to                  String
+    toZip               String
+    numSegments         Int
+    messageSid          String
+    createdAt           DateTime   @default(now())
+    updatedAt           DateTime   @updatedAt
+    Subscriber          Subscriber @relation(fields: [subscriberId], references: [id])
+    subscriberId        String
 }
 
 model VerificationToken {
