@@ -41,7 +41,7 @@ export const postRouter = createTRPCRouter({
               contains: input.search || "",
               mode: "insensitive",
             },
-            sentTo: {
+            OutboundWebhook: {
               none: {},
             },
           }
@@ -55,7 +55,7 @@ export const postRouter = createTRPCRouter({
               contains: input.search || "",
               mode: "insensitive",
             },
-            sentTo: {
+            OutboundWebhook: {
               some: {},
             },
           }
@@ -86,14 +86,14 @@ export const postRouter = createTRPCRouter({
           take: 5,
           orderBy: { createdAt: "desc" },
           include: {
-            sentTo: true,
+            OutboundWebhook: true,
           },
           where: {
             text: {
               contains: input.search || "",
               mode: "insensitive",
             },
-            sentTo: {
+            OutboundWebhook: {
               none: {},
             },
           },
@@ -103,14 +103,14 @@ export const postRouter = createTRPCRouter({
         return ctx.db.post.findMany({
           orderBy: { createdAt: "desc" },
           include: {
-            sentTo: true,
+            OutboundWebhook: true,
           },
           where: {
             text: {
               contains: input.search || "",
               mode: "insensitive",
             },
-            sentTo: {
+            OutboundWebhook: {
               some: {},
             },
           },
@@ -127,7 +127,7 @@ export const postRouter = createTRPCRouter({
           },
         },
         include: {
-          sentTo: true,
+          OutboundWebhook: true,
         },
       });
     }),
@@ -158,7 +158,7 @@ export const postRouter = createTRPCRouter({
     .mutation(async ({ctx, input}) => {
       const post = await ctx.db.post.findFirst({
         where: { id: input.id },
-        include: { sentTo: true }
+        include: { OutboundWebhook: true }
       });
       if (post && post.text){
         if (input.schedule){
@@ -177,7 +177,7 @@ export const postRouter = createTRPCRouter({
         }
 
         const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-        const subscribers = await ctx.db.subscriber.findMany({ include: { recieved: true }});
+        const subscribers = await ctx.db.subscriber.findMany({ include: { OutboundWebhook: true }});
         subscribers.forEach(person => {
           twilioClient.messages.create(input.schedule ? {
             body: `${post.text}`,
@@ -190,22 +190,39 @@ export const postRouter = createTRPCRouter({
             to: person.phone,
             messagingServiceSid: process.env.TWILIO_SERVICE_SID,
           }).then( async (message) => {
-            if(message.status === "accepted" || message.status === "scheduled"){
+            // if(message.status === "accepted" || message.status === "scheduled"){
+              console.log("TWILIO PACKAGE DATA:", message);
+              const outboundWebhook = await ctx.db.outboundWebhook.create({ 
+                include: {
+                  post: true,
+                  subscriber: true
+                },
+                data: {
+                  apiVersion: message.apiVersion,
+                  rawDlrDoneDate: message.dateUpdated,
+                  smsSid: message.sid,
+                  smsStatus: message.status,
+                  to: message.to,
+                  from: message.from,
+                  subscriber: {connect: {id: person.id}},
+                  post: {connect: {id: post.id}},
+                }
+              })
               await ctx.db.subscriber.update({ 
                 where: {id: person.id},
-                include: { recieved: true },
+                include: { OutboundWebhook: true },
                 data: {
-                  recieved: {connect: {id: post.id}}
+                  OutboundWebhook: {connect: {id: outboundWebhook.id}}
                 }
               })
               await ctx.db.post.update({ 
                 where: {id: post.id},
-                include: { sentTo: true },
+                include: { OutboundWebhook: true },
                 data: {
-                  sentTo: {connect: {id: person.id}}
+                  OutboundWebhook: {connect: {id: outboundWebhook.id}}
                 }
               })
-            }
+            // }
           })
           
         })
@@ -213,12 +230,11 @@ export const postRouter = createTRPCRouter({
       }
 
     }),
-  getLatest: protectedProcedure.query(({ ctx }) => {
-    return ctx.db.post.findFirst({
-      orderBy: { createdAt: "desc" },
-      where: { createdBy: { id: ctx.session.user.id } },
-    });
-  }),
+  // updateOutboundWebhook: protectedProcedure.mutation(({ ctx, input }) => {
+  //   return ctx.db.outboundWebhook.findFirst({
+  //     where: { smsSid: input.id },
+  //   });
+  // }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
