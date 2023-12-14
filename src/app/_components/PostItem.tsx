@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import DeletePostModal from "./DeletePostModal";
 import SendPostModal from "./SendPostModal";
-type PostWithSent = Prisma.PostGetPayload<{ include: { sentTo: true } }>;
+type PostWithSent = Prisma.PostGetPayload<{ include: { OutboundWebhook: true } }>;
 
 export default function PostItem(props: { post: PostWithSent }) {
   const post = props.post;
