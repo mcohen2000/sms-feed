@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { countCharacters } from "../_utils/countCharacters";
 
-type PostWithSent = Prisma.PostGetPayload<{ include: { sentTo: true } }>;
+type PostWithSent = Prisma.PostGetPayload<{ include: { OutboundWebhook: true } }>;
 
 export default function SendPostModal(props: {
   post: PostWithSent;
