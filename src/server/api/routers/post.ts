@@ -101,6 +101,8 @@ export const postRouter = createTRPCRouter({
       }
       if (input.sent === "true") {
         return ctx.db.post.findMany({
+          skip: 5*(parseInt(input.page)-1) || 0,
+          take: 5,
           orderBy: { createdAt: "desc" },
           include: {
             OutboundWebhook: true,
