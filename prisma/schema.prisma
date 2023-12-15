@@ -75,8 +75,8 @@ model Subscriber {
 model OutboundWebhook {
     id                  String     @id @default(cuid())
     apiVersion          String
-    rawDlrDoneDate      DateTime?
-    smsSid              String
+    rawDlrDoneDate      String?
+    smsSid              String     @unique
     smsStatus           String
     to                  String
     from                String?
