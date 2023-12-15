@@ -191,7 +191,6 @@ export const postRouter = createTRPCRouter({
             messagingServiceSid: process.env.TWILIO_SERVICE_SID,
           }).then( async (message) => {
             // if(message.status === "accepted" || message.status === "scheduled"){
-              console.log("TWILIO PACKAGE DATA:", message);
               const outboundWebhook = await ctx.db.outboundWebhook.create({ 
                 include: {
                   post: true,
@@ -199,7 +198,6 @@ export const postRouter = createTRPCRouter({
                 },
                 data: {
                   apiVersion: message.apiVersion,
-                  rawDlrDoneDate: message.dateUpdated,
                   smsSid: message.sid,
                   smsStatus: message.status,
                   to: message.to,
@@ -230,13 +228,21 @@ export const postRouter = createTRPCRouter({
       }
 
     }),
-  // updateOutboundWebhook: protectedProcedure.mutation(({ ctx, input }) => {
-  //   return ctx.db.outboundWebhook.findFirst({
-  //     where: { smsSid: input.id },
-  //   });
-  // }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
+  updateOutboundWebhook: publicProcedure
+  .input(z.object({ smsSid: z.string().min(1), status: z.string(), from: z.string().nullable(), doneDate: z.string().nullable() }))
+  .mutation(async ({ ctx, input }) => {
+    const exists = await ctx.db.outboundWebhook.findFirst({
+      where: { smsSid: input.smsSid }
+    });
+    if (exists && exists.smsStatus !== "delivered") {
+       return ctx.db.outboundWebhook.update({
+        where: {id: exists.id},
+        data: {
+          smsStatus: input.status,
+          from: input.from,
+          rawDlrDoneDate: exists.rawDlrDoneDate ? null : input.doneDate,
+        }
+      })
+    }
   }),
 });
