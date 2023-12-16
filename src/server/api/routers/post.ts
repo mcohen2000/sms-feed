@@ -190,6 +190,7 @@ export const postRouter = createTRPCRouter({
         );
         const subscribers = await ctx.db.subscriber.findMany({
           include: { OutboundWebhook: true },
+          where: { optedOut: false }
         });
         subscribers.forEach((person) => {
           twilioClient.messages
