@@ -76,6 +76,14 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
+  countSent: protectedProcedure
+    .query(async ({ ctx }) => 
+      ctx.db.outboundWebhook.count({
+        where: {
+          smsStatus: "delivered"
+        },
+      })
+    ),
     getAll: protectedProcedure
     .input(
       z.object({
