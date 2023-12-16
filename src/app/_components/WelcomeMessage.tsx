@@ -13,7 +13,6 @@ export default function WelcomeMessage(props: { post: Post | null }) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const createPost = api.post.create.useMutation({
     onSuccess: () => {
-      setText("");
       router.refresh();
     },
   });
@@ -95,16 +94,19 @@ export default function WelcomeMessage(props: { post: Post | null }) {
           <label htmlFor="welcomeMsgInput" className="text-lg font-bold">
             Edit Welcome Message
           </label>
-          <button className="rounded-md border px-2 py-1 bg-red-500" onClick={() => setIsEditing(false)}>Cancel</button>
+          <button className="rounded-md border px-2 py-1 bg-red-500" onClick={() => {
+              setText(post.text)
+              setIsEditing(false)
+            }}>Cancel</button>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold">
-          Character Count: {countCharacters(!text && post.text ? post.text : text)}
+          Character Count: {countCharacters(text)}
         </p>
         <p className="font-semibold">
           SMS Count:{" "}
-          {countCharacters( !text && post.text ? post.text : text) > 160
-            ? Math.ceil(countCharacters(!text && post.text ? post.text : text) / 153)
+          {countCharacters(text) > 160
+            ? Math.ceil(countCharacters(text) / 153)
             : 1}
         </p>
       </div>
@@ -112,7 +114,7 @@ export default function WelcomeMessage(props: { post: Post | null }) {
             placeholder="Type welcome message here..."
             id="welcomeMsgInput"
             ref={inputRef}
-            value={text || post.text}
+            value={text}
             onChange={(e) => setText(e.target.value)}
             className="w-full border px-4 py-2 text-black"
           />
@@ -134,12 +136,12 @@ export default function WelcomeMessage(props: { post: Post | null }) {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold">
-          Character Count: {countCharacters(!text && post.text ? post.text : text)}
+          Character Count: {countCharacters(text)}
         </p>
         <p className="font-semibold">
           SMS Count:{" "}
-          {countCharacters(!text && post.text ? post.text : text) > 160
-            ? Math.ceil(countCharacters(!text && post.text ? post.text : text) / 153)
+          {countCharacters(text) > 160
+            ? Math.ceil(countCharacters(text) / 153)
             : 1}
         </p>
       </div>
