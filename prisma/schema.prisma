@@ -21,6 +21,7 @@ model Post {
     updatedAt         DateTime          @updatedAt
     createdBy         User              @relation(fields: [createdById], references: [id])
     createdById       String
+    isWelcomeMsg      Boolean           @default(false)
     OutboundWebhook   OutboundWebhook[] @relation(name: "SentTo")
 }
 
@@ -90,22 +91,21 @@ model OutboundWebhook {
 
 model InboundWebhook {
     id                  String     @id @default(cuid())
-    toCountry           String
-    toState             String
-    smsMessageSid       String
+    toCountry           String?
+    toState             String?
     numMedia            Int
-    toCity              String
-    fromZip             String
+    toCity              String?
+    fromZip             String?
     smsSid              String
     optOutType          String?
-    fromState           String
+    fromState           String?
     smsStatus           String
-    fromCity            String
+    fromCity            String?
     body                String
+    from                String
     to                  String
-    toZip               String
+    toZip               String?
     numSegments         Int
-    messageSid          String
     createdAt           DateTime   @default(now())
     updatedAt           DateTime   @updatedAt
     Subscriber          Subscriber @relation(fields: [subscriberId], references: [id])
