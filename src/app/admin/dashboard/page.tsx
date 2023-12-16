@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 
 import Analytics from "~/app/_components/Analytics";
 import DashboardNav from "~/app/_components/DashboardNav";
+import WelcomeMessage from "~/app/_components/WelcomeMessage";
+import { api } from "~/trpc/server";
 type Props = {
   params: {};
   searchParams: { [key: string]: string | undefined };
@@ -15,14 +17,17 @@ export default async function DashboardPage(props: Props) {
     return redirect("/admin/login");
   }
   const view = props.searchParams.view || 'posts';
+  const welcomeMsgPost = await api.post.getWelcomeMsg.query();
   return (
     <div className="flex h-full min-h-screen flex-col items-center py-8 justify-start bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <h1 className="text-3xl font-bold">Dashboard</h1>
       <p className="py-4">Welcome back, {session?.user.firstName}</p>
       <div className="flex w-[80%] flex-col items-center justify-center gap-2">
       <DashboardNav view={props.searchParams.view}/>
-        { view === 'posts' && <><CreatePost />
-        <SMSDashboard search={props.searchParams.search} sent={props.searchParams.sent} page={props.searchParams.page}/>
+        { view === 'posts' && <>
+        <WelcomeMessage post={welcomeMsgPost} />
+        { welcomeMsgPost ? <><CreatePost />
+        <SMSDashboard search={props.searchParams.search} sent={props.searchParams.sent} page={props.searchParams.page}/></>: <></>}
         </>}
         { view === 'analytics' && <Analytics/>}
         

@@ -34,7 +34,7 @@ export function CreatePost() {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        createPost.mutate({ text });
+        createPost.mutate({ text, isWelcomeMsg: false });
       }}
       className="flex w-full flex-col gap-2 rounded-md bg-white p-4 text-black"
     >
