@@ -9,23 +9,24 @@ import twilio from "twilio";
 import { TRPCError } from "@trpc/server";
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
   create: protectedProcedure
-    .input(z.object({ text: z.string().min(1).max(1530) }))
+    .input(z.object({ text: z.string().min(1).max(1530), isWelcomeMsg: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       // simulate a slow db call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return ctx.db.post.create({
         data: {
           text: input.text,
+          isWelcomeMsg: input.isWelcomeMsg,
           createdBy: { connect: { id: ctx.session.user.id } },
+        },
+      });
+    }),
+  getWelcomeMsg: protectedProcedure
+    .query(async ({ ctx }) => {
+      return ctx.db.post.findFirst({
+        where: {
+          isWelcomeMsg: true
         },
       });
     }),
@@ -44,6 +45,7 @@ export const postRouter = createTRPCRouter({
               contains: input.search || "",
               mode: "insensitive",
             },
+            isWelcomeMsg: false,
             OutboundWebhook: {
               none: {},
             },
@@ -57,6 +59,7 @@ export const postRouter = createTRPCRouter({
               contains: input.search || "",
               mode: "insensitive",
             },
+            isWelcomeMsg: false,
             OutboundWebhook: {
               some: {},
             },
@@ -69,59 +72,62 @@ export const postRouter = createTRPCRouter({
             contains: input.search || "",
             mode: "insensitive",
           },
+          isWelcomeMsg: false,
         },
       });
     }),
-  getAll: protectedProcedure
+    getAll: protectedProcedure
     .input(
       z.object({
         search: z.string(),
         sent: z.string(),
         page: z.string(),
       }),
-    )
-    .query(async ({ ctx, input }) => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      if (input.sent === "false") {
+      )
+      .query(async ({ ctx, input }) => {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (input.sent === "false") {
+          return ctx.db.post.findMany({
+            skip: 5 * (parseInt(input.page) - 1) || 0,
+            take: 5,
+            orderBy: { createdAt: "desc" },
+            include: {
+              OutboundWebhook: true,
+            },
+            where: {
+              text: {
+                contains: input.search || "",
+                mode: "insensitive",
+              },
+              isWelcomeMsg: false,
+              OutboundWebhook: {
+                none: {},
+              },
+            },
+          });
+        }
+        if (input.sent === "true") {
+          return ctx.db.post.findMany({
+            skip: 5 * (parseInt(input.page) - 1) || 0,
+            take: 5,
+            orderBy: { createdAt: "desc" },
+            include: {
+              OutboundWebhook: true,
+            },
+            where: {
+              text: {
+                contains: input.search || "",
+                mode: "insensitive",
+              },
+              isWelcomeMsg: false,
+              OutboundWebhook: {
+                some: {},
+              },
+            },
+          });
+        }
         return ctx.db.post.findMany({
           skip: 5 * (parseInt(input.page) - 1) || 0,
-          take: 5,
-          orderBy: { createdAt: "desc" },
-          include: {
-            OutboundWebhook: true,
-          },
-          where: {
-            text: {
-              contains: input.search || "",
-              mode: "insensitive",
-            },
-            OutboundWebhook: {
-              none: {},
-            },
-          },
-        });
-      }
-      if (input.sent === "true") {
-        return ctx.db.post.findMany({
-          skip: 5 * (parseInt(input.page) - 1) || 0,
-          take: 5,
-          orderBy: { createdAt: "desc" },
-          include: {
-            OutboundWebhook: true,
-          },
-          where: {
-            text: {
-              contains: input.search || "",
-              mode: "insensitive",
-            },
-            OutboundWebhook: {
-              some: {},
-            },
-          },
-        });
-      }
-      return ctx.db.post.findMany({
-        skip: 5 * (parseInt(input.page) - 1) || 0,
         take: 5,
         orderBy: { createdAt: "desc" },
         where: {
@@ -129,6 +135,7 @@ export const postRouter = createTRPCRouter({
             contains: input.search || "",
             mode: "insensitive",
           },
+          isWelcomeMsg: false,
         },
         include: {
           OutboundWebhook: true,

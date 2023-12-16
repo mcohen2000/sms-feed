@@ -60,17 +60,51 @@ export const userRouter = createTRPCRouter({
           message: "This number is already registered to a user.",
         });
       }
-      const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-      twilioClient.messages.create({
-        body: `Welcome to the T3 SMS Feed!\nReply with "STOP" to unsubscribe.`,
-        to: input.phone,
-        messagingServiceSid: process.env.TWILIO_SERVICE_SID,
-      }).then( message => console.log(message))
-      return ctx.db.subscriber.create({
+      const newSubscriber = await ctx.db.subscriber.create({
         data: {
           phone: input.phone,
         },
       });
+      const welcomePost = await ctx.db.post.findFirst({
+        where: {isWelcomeMsg: true}
+      });
+      const twilioClient = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN,
+      );
+      if (welcomePost){
+
+        return twilioClient.messages
+        .create({
+          body: welcomePost.text,
+          to: input.phone,
+          messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+        })
+        .then(async (message) => {
+          console.log(message)
+          const outboundWebhook = await ctx.db.outboundWebhook.create({
+            include: {
+              subscriber: true,
+            },
+            data: {
+              apiVersion: message.apiVersion,
+              smsSid: message.sid,
+              smsStatus: message.status,
+              to: message.to,
+              from: message.from,
+              subscriber: { connect: { id: newSubscriber.id } },
+              post: {connect: {id: welcomePost.id}},              
+            },
+          });
+          await ctx.db.subscriber.update({
+            where: { id: newSubscriber.id },
+            include: { OutboundWebhook: true },
+            data: {
+              OutboundWebhook: { connect: { id: outboundWebhook.id } },
+            },
+          });
+        });
+      }
     }),
   subscriberCount: protectedProcedure.query(async ({ ctx }) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
