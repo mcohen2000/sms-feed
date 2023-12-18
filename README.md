@@ -12,9 +12,9 @@ This is a [T3 Stack](https://create.t3.gg/) project designed to empower individu
 - [tRPC](https://trpc.io)
 - [Twilio](https://www.twilio.com)
 
-## Pages
+## Dashboard
 
-### Dashboard
+### Post Manager
 Set Welcome Message:
 ![Set Welcome Message](https://github.com/mcohen2000/sms-feed/assets/65527695/bbab7aff-5b26-43e9-bfb1-c497dd8431fd)
 Post Manager Overview:
@@ -27,7 +27,9 @@ Send Post:
 ![Send Post](https://github.com/mcohen2000/sms-feed/assets/65527695/bb108423-71f6-4092-808e-446f7650b7ee)
 Schedule Post:
 ![Schedule Send Post](https://github.com/mcohen2000/sms-feed/assets/65527695/c6659976-e0c4-4560-9bfa-3f40ec043359)
+### Post Queue
 Post Queue:
 ![Queue](https://github.com/mcohen2000/sms-feed/assets/65527695/e7ebdf48-d923-42e7-a570-b2d722d8c81a)
+### Post Analytics
 Analytics:
 ![Analytics](https://github.com/mcohen2000/sms-feed/assets/65527695/815b6ecb-d00d-41ab-8292-332304429161)
