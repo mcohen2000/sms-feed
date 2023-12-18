@@ -15,10 +15,10 @@ This is a [T3 Stack](https://create.t3.gg/) project designed to empower individu
 ## Dashboard
 
 ### Post Manager
+Overview:
+![Posts](https://github.com/mcohen2000/sms-feed/assets/65527695/5fcfa52e-d5e7-4f40-a09a-d10c584c9e23)
 Set Welcome Message:
 ![Set Welcome Message](https://github.com/mcohen2000/sms-feed/assets/65527695/bbab7aff-5b26-43e9-bfb1-c497dd8431fd)
-Post Manager Overview:
-![Posts](https://github.com/mcohen2000/sms-feed/assets/65527695/5fcfa52e-d5e7-4f40-a09a-d10c584c9e23)
 Edit Post:
 ![Edit Post](https://github.com/mcohen2000/sms-feed/assets/65527695/5dc30705-ef3c-4798-b51f-1728a7d6e9d7)
 Delete Post:
@@ -28,8 +28,6 @@ Send Post:
 Schedule Post:
 ![Schedule Send Post](https://github.com/mcohen2000/sms-feed/assets/65527695/c6659976-e0c4-4560-9bfa-3f40ec043359)
 ### Post Queue
-Post Queue:
 ![Queue](https://github.com/mcohen2000/sms-feed/assets/65527695/e7ebdf48-d923-42e7-a570-b2d722d8c81a)
 ### Post Analytics
-Analytics:
 ![Analytics](https://github.com/mcohen2000/sms-feed/assets/65527695/815b6ecb-d00d-41ab-8292-332304429161)
