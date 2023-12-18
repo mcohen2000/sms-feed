@@ -7,6 +7,7 @@ import Analytics from "~/app/_components/Analytics";
 import DashboardNav from "~/app/_components/DashboardNav";
 import WelcomeMessage from "~/app/_components/WelcomeMessage";
 import { api } from "~/trpc/server";
+import PostQueue from "~/app/_components/PostQueue";
 type Props = {
   params: {};
   searchParams: { [key: string]: string | undefined };
@@ -25,7 +26,7 @@ export default async function DashboardPage(props: Props) {
         <p className="">Welcome back, {session?.user.firstName}</p>
         <Link
           href={"/api/auth/signout"}
-          className="rounded-full text-center bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+          className="rounded-full bg-white/10 px-10 py-3 text-center font-semibold no-underline transition hover:bg-white/20"
         >
           Sign out
         </Link>
@@ -50,6 +51,13 @@ export default async function DashboardPage(props: Props) {
           </>
         )}
         {view === "analytics" && <Analytics />}
+        {view === "queue" && (
+          <PostQueue
+            search={props.searchParams.search}
+            sent={props.searchParams.sent}
+            page={props.searchParams.page}
+          />
+        )}
       </div>
     </div>
   );
