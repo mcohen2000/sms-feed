@@ -29,20 +29,16 @@ export default function PostQueueItem(props: { post: PostWithSent }) {
         {post.text}
       </td>
       <td className="w-[100px] min-w-[100px] max-w-[100px] px-4 py-3">
-        {post.OutboundWebhook[post.OutboundWebhook.length - 1]?.smsStatus ===
-        "scheduled" ? (
+        {post.OutboundWebhook.some(item => item.smsStatus ===
+        "scheduled") ? (
           <>
-            {post.OutboundWebhook[post.OutboundWebhook.length - 1]?.smsStatus
-              .charAt(0)
-              .toUpperCase()}
-            {post.OutboundWebhook[
-              post.OutboundWebhook.length - 1
-            ]?.smsStatus.substring(1)}
+            Scheduled
             <button className="text-blue-500 underline"
                 onClick={() => cancelScheduled.mutate({postId: post.id})}
             >Cancel</button>
           </>
-        ) : (
+        ) : post.OutboundWebhook.some(item => item.smsStatus ===
+            "delivered") ? "Delivered" : (
           `${post.OutboundWebhook[post.OutboundWebhook.length - 1]?.smsStatus
             .charAt(0)
             .toUpperCase()}${post.OutboundWebhook[
