@@ -93,6 +93,7 @@ export const postRouter = createTRPCRouter({
         search: z.string(),
         sent: z.string(),
         page: z.string(),
+        sortBy: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -101,7 +102,7 @@ export const postRouter = createTRPCRouter({
         return ctx.db.post.findMany({
           skip: 5 * (parseInt(input.page) - 1) || 0,
           take: 5,
-          orderBy: { createdAt: "desc" },
+          orderBy: input.sortBy ? {[input.sortBy]: "desc"}: { createdAt: "desc" },
           include: {
             OutboundWebhook: true,
           },
@@ -121,7 +122,7 @@ export const postRouter = createTRPCRouter({
         return ctx.db.post.findMany({
           skip: 5 * (parseInt(input.page) - 1) || 0,
           take: 5,
-          orderBy: { createdAt: "desc" },
+          orderBy: input.sortBy ? {[input.sortBy]: "desc"}: { createdAt: "desc" },
           include: {
             OutboundWebhook: true,
           },
@@ -140,7 +141,7 @@ export const postRouter = createTRPCRouter({
       return ctx.db.post.findMany({
         skip: 5 * (parseInt(input.page) - 1) || 0,
         take: 5,
-        orderBy: { createdAt: "desc" },
+        orderBy: input.sortBy ? {[input.sortBy]: "desc"}: { createdAt: "desc" },
         where: {
           text: {
             contains: input.search || "",
@@ -255,6 +256,7 @@ export const postRouter = createTRPCRouter({
                 where: { id: post.id },
                 include: { OutboundWebhook: true },
                 data: {
+                  sendDate: input.schedule ? new Date(input.schedule) : new Date(),
                   OutboundWebhook: { connect: { id: outboundWebhook.id } },
                 },
               });

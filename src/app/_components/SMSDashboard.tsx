@@ -10,6 +10,7 @@ export default async function Dashboard(searchParams: {
     search: searchParams.search || "",
     sent: searchParams.sent || "",
     page: searchParams.page || "",
+    sortBy: ""
   });
   const postsCount = await api.post.count.query({
     search: searchParams.search || "",

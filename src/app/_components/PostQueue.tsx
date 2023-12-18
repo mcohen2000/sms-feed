@@ -11,6 +11,7 @@ export default async function PostQueue(searchParams: {
     search: searchParams.search || "",
     sent: "true",
     page: searchParams.page || "",
+    sortBy: "sendDate"
   });
   const postsCount = await api.post.count.query({
     search: searchParams.search || "",
