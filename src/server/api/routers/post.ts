@@ -10,7 +10,12 @@ import { TRPCError } from "@trpc/server";
 
 export const postRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ text: z.string().min(1).max(1530), isWelcomeMsg: z.boolean() }))
+    .input(
+      z.object({
+        text: z.string().min(1).max(1530),
+        isWelcomeMsg: z.boolean(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       // simulate a slow db call
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -22,14 +27,13 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
-  getWelcomeMsg: protectedProcedure
-    .query(async ({ ctx }) => {
-      return ctx.db.post.findFirst({
-        where: {
-          isWelcomeMsg: true
-        },
-      });
-    }),
+  getWelcomeMsg: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.post.findFirst({
+      where: {
+        isWelcomeMsg: true,
+      },
+    });
+  }),
   count: protectedProcedure
     .input(
       z.object({
@@ -76,66 +80,65 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
-  countSent: protectedProcedure
-    .query(async ({ ctx }) => 
-      ctx.db.outboundWebhook.count({
-        where: {
-          smsStatus: "delivered"
-        },
-      })
-    ),
-    getAll: protectedProcedure
+  countSent: protectedProcedure.query(async ({ ctx }) =>
+    ctx.db.outboundWebhook.count({
+      where: {
+        smsStatus: "delivered",
+      },
+    }),
+  ),
+  getAll: protectedProcedure
     .input(
       z.object({
         search: z.string(),
         sent: z.string(),
         page: z.string(),
       }),
-      )
-      .query(async ({ ctx, input }) => {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        if (input.sent === "false") {
-          return ctx.db.post.findMany({
-            skip: 5 * (parseInt(input.page) - 1) || 0,
-            take: 5,
-            orderBy: { createdAt: "desc" },
-            include: {
-              OutboundWebhook: true,
-            },
-            where: {
-              text: {
-                contains: input.search || "",
-                mode: "insensitive",
-              },
-              isWelcomeMsg: false,
-              OutboundWebhook: {
-                none: {},
-              },
-            },
-          });
-        }
-        if (input.sent === "true") {
-          return ctx.db.post.findMany({
-            skip: 5 * (parseInt(input.page) - 1) || 0,
-            take: 5,
-            orderBy: { createdAt: "desc" },
-            include: {
-              OutboundWebhook: true,
-            },
-            where: {
-              text: {
-                contains: input.search || "",
-                mode: "insensitive",
-              },
-              isWelcomeMsg: false,
-              OutboundWebhook: {
-                some: {},
-              },
-            },
-          });
-        }
+    )
+    .query(async ({ ctx, input }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (input.sent === "false") {
         return ctx.db.post.findMany({
           skip: 5 * (parseInt(input.page) - 1) || 0,
+          take: 5,
+          orderBy: { createdAt: "desc" },
+          include: {
+            OutboundWebhook: true,
+          },
+          where: {
+            text: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            isWelcomeMsg: false,
+            OutboundWebhook: {
+              none: {},
+            },
+          },
+        });
+      }
+      if (input.sent === "true") {
+        return ctx.db.post.findMany({
+          skip: 5 * (parseInt(input.page) - 1) || 0,
+          take: 5,
+          orderBy: { createdAt: "desc" },
+          include: {
+            OutboundWebhook: true,
+          },
+          where: {
+            text: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            isWelcomeMsg: false,
+            OutboundWebhook: {
+              some: {},
+            },
+          },
+        });
+      }
+      return ctx.db.post.findMany({
+        skip: 5 * (parseInt(input.page) - 1) || 0,
         take: 5,
         orderBy: { createdAt: "desc" },
         where: {
@@ -205,7 +208,7 @@ export const postRouter = createTRPCRouter({
         );
         const subscribers = await ctx.db.subscriber.findMany({
           include: { OutboundWebhook: true },
-          where: { optedOut: false }
+          where: { optedOut: false },
         });
         subscribers.forEach((person) => {
           twilioClient.messages
@@ -285,6 +288,36 @@ export const postRouter = createTRPCRouter({
         });
       }
     }),
+  cancelScheduled: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const exists = await ctx.db.outboundWebhook.findMany({
+        where: { postId: input.postId, smsStatus: "scheduled" },
+      });
+      if (exists.length > 0) {
+        const twilioClient = twilio(
+          process.env.TWILIO_ACCOUNT_SID,
+          process.env.TWILIO_AUTH_TOKEN,
+        );
+        exists.forEach((message) => {
+          twilioClient
+            .messages(message.smsSid)
+            .update({ status: "canceled" })
+            .then((res) =>
+              ctx.db.outboundWebhook.update({
+                where: { id: message.id },
+                data: {
+                  smsStatus: res.status,
+                },
+              }),
+            );
+        });
+      }
+    }),
   handleInboundWebhook: publicProcedure
     .input(
       z.object({
@@ -309,19 +342,19 @@ export const postRouter = createTRPCRouter({
       const subscriber = await ctx.db.subscriber.findFirst({
         where: { phone: input.from },
       });
-      console.log("SUBSCRIBER!!!!", subscriber)
+      console.log("SUBSCRIBER!!!!", subscriber);
       if (subscriber) {
         console.log("DB OPTOUT", subscriber.phone, subscriber.optedOut);
-        console.log("SMS OPTOUT", input.optOutType)
+        console.log("SMS OPTOUT", input.optOutType);
         if (input.optOutType === "START" && subscriber.optedOut) {
-          console.log("START OPT MSG")
+          console.log("START OPT MSG");
           await ctx.db.subscriber.update({
             where: { phone: subscriber.phone },
             data: { optedOut: false },
           });
         }
         if (input.optOutType === "STOP" && !subscriber.optedOut) {
-          console.log("STOP OPT MSG")
+          console.log("STOP OPT MSG");
           await ctx.db.subscriber.update({
             where: { phone: subscriber.phone },
             data: { optedOut: true },
