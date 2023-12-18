@@ -55,7 +55,6 @@ declare module "next-auth" {
 export const authOptions: NextAuthOptions = {
   callbacks: {
     jwt: async ({token, user}:{token: JWT, user: User}): Promise<JWT> => {
-      console.log("TOKEN BEFORE:", token)
       const dbUser = await db.user.findFirst({
         where: { id: token.id }
       });
@@ -66,7 +65,6 @@ export const authOptions: NextAuthOptions = {
       if (dbUser){
         token.role = dbUser.role;
       }
-      console.log("TOKEN AFTER:", token)
     return token
   },
     session: ({ session, token }) => ({

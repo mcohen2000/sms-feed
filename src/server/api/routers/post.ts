@@ -342,19 +342,14 @@ export const postRouter = createTRPCRouter({
       const subscriber = await ctx.db.subscriber.findFirst({
         where: { phone: input.from },
       });
-      console.log("SUBSCRIBER!!!!", subscriber);
       if (subscriber) {
-        console.log("DB OPTOUT", subscriber.phone, subscriber.optedOut);
-        console.log("SMS OPTOUT", input.optOutType);
         if (input.optOutType === "START" && subscriber.optedOut) {
-          console.log("START OPT MSG");
           await ctx.db.subscriber.update({
             where: { phone: subscriber.phone },
             data: { optedOut: false },
           });
         }
         if (input.optOutType === "STOP" && !subscriber.optedOut) {
-          console.log("STOP OPT MSG");
           await ctx.db.subscriber.update({
             where: { phone: subscriber.phone },
             data: { optedOut: true },

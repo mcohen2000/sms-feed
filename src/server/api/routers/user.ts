@@ -81,7 +81,6 @@ export const userRouter = createTRPCRouter({
           messagingServiceSid: process.env.TWILIO_SERVICE_SID,
         })
         .then(async (message) => {
-          console.log(message)
           const outboundWebhook = await ctx.db.outboundWebhook.create({
             include: {
               subscriber: true,
