@@ -22,6 +22,7 @@ model Post {
     createdBy         User              @relation(fields: [createdById], references: [id])
     createdById       String
     isWelcomeMsg      Boolean           @default(false)
+    sendDate          DateTime?
     OutboundWebhook   OutboundWebhook[] @relation(name: "SentTo")
 }
 

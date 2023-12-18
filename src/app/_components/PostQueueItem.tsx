@@ -18,9 +18,7 @@ export default function PostQueueItem(props: { post: PostWithSent }) {
   return (
     <tr className="border-b">
       <td className="w-[100px] min-w-[100px] px-4 py-3">
-        {post.OutboundWebhook[
-          post.OutboundWebhook.length - 1
-        ]?.createdAt.toLocaleString()}
+        {post.sendDate?.toLocaleString()}
       </td>
       <td
         className="w-[400px] min-w-[400px] max-w-[400px] truncate px-4 py-3"
