@@ -6,6 +6,7 @@ import { useState } from "react";
 export default function PostFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const view = searchParams.get("view");
   const search = searchParams.get("search");
   const sent = searchParams.get("sent");
   const [searchInput, setSearchInput] = useState(search || "");
@@ -39,6 +40,48 @@ export default function PostFilters() {
         <button className="rounded-md border px-2 py-1 bg-blue-500 text-white" type="submit">Submit</button>
       </form>
       <div className="flex gap-1">
+        {view === "queue" ? <><button
+          className={`rounded-md border px-2 py-1 ${
+            sent === "delivered" ? "bg-blue-500 text-white" : ""
+          }`}
+          onClick={() => {
+            if (search && search?.length > 0) {
+              if (sent === "delivered") {
+                return router.push(`?view=queue&search=${search}`);
+              }
+              if (sent === "scheduled" || !sent) {
+                return router.push(`?view=queue&search=${search}&sent=delivered`);
+              }
+            }
+            if (sent === "delivered") {
+              return router.push(`/admin/dashboard?view=queue`);
+            }
+            return router.push(`?view=queue&sent=delivered`);
+          }}
+        >
+          Delivered
+        </button>
+        <button
+          className={`rounded-md border px-2 py-1 ${
+            sent === "scheduled" ? "bg-blue-500 text-white" : ""
+          }`}
+          onClick={() => {
+            if (search && search?.length > 0) {
+              if (sent === "scheduled") {
+                return router.push(`?view=queue&search=${search}`);
+              }
+              if (sent === "delivered" || !sent) {
+                return router.push(`?view=queue&search=${search}&sent=scheduled`);
+              }
+            }
+            if (sent === "scheduled") {
+              return router.push(`/admin/dashboard?view=queue`);
+            }
+            return router.push(`?view=queue&sent=scheduled`);
+          }}
+        >
+          Scheduled
+        </button></>:<>
         <button
           className={`rounded-md border px-2 py-1 ${
             sent === "true" ? "bg-blue-500 text-white" : ""
@@ -80,7 +123,7 @@ export default function PostFilters() {
           }}
         >
           Unsent
-        </button>
+        </button></>}
       </div>
     </div>
   );
