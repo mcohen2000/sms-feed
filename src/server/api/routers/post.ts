@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -42,6 +41,46 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      if (input.sent === "delivered") {
+        return ctx.db.post.count({
+          where: {
+            text: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            sendDate: {
+              not: null,
+              lte: new Date().toISOString(),
+            },
+            isWelcomeMsg: false,
+            OutboundWebhook: {
+              some: {
+                smsStatus: 'delivered'
+              },
+            },
+        },
+        });
+      }
+      if (input.sent === "scheduled") {
+        return ctx.db.post.count({
+          where: {
+            text: {
+              contains: input.search || "",
+              mode: "insensitive",
+            },
+            sendDate: {
+              not: null,
+              gte: new Date().toISOString(),
+            },
+            isWelcomeMsg: false,
+            OutboundWebhook: {
+              some: {
+                smsStatus: 'scheduled'
+              },
+            },
+        },
+        });
+      }
       if (input.sent === "false") {
         return ctx.db.post.count({
           where: {
@@ -98,6 +137,58 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (input.sent === "delivered") {
+        return ctx.db.post.findMany({
+          skip: 5 * (parseInt(input.page) - 1) || 0,
+          take: 5,
+          orderBy: input.sortBy ? {[input.sortBy]: "desc"}: { createdAt: "desc" },
+          include: {
+            OutboundWebhook: true,
+          },
+          where: {
+              text: {
+                contains: input.search || "",
+                mode: "insensitive",
+              },
+              sendDate: {
+                not: null,
+                lte: new Date().toISOString(),
+              },
+              isWelcomeMsg: false,
+              OutboundWebhook: {
+                some: {
+                  smsStatus: 'delivered'
+                },
+              },
+          },
+        });
+      }
+      if (input.sent === "scheduled") {
+        return ctx.db.post.findMany({
+          skip: 5 * (parseInt(input.page) - 1) || 0,
+          take: 5,
+          orderBy: input.sortBy ? {[input.sortBy]: "desc"}: { createdAt: "desc" },
+          include: {
+            OutboundWebhook: true,
+          },
+          where: {
+              text: {
+                contains: input.search || "",
+                mode: "insensitive",
+              },
+              sendDate: {
+                not: null,
+                gte: new Date().toISOString(),
+              },
+              isWelcomeMsg: false,
+              OutboundWebhook: {
+                some: {
+                  smsStatus: 'scheduled'
+                },
+              },
+          },
+        });
+      }
       if (input.sent === "false") {
         return ctx.db.post.findMany({
           skip: 5 * (parseInt(input.page) - 1) || 0,

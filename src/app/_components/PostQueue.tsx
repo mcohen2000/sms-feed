@@ -1,5 +1,4 @@
 import { api } from "~/trpc/server";
-import PostItem from "./PostItem";
 import PostFilters from "./PostFilters";
 import Link from "next/link";
 import PostQueueItem from "./PostQueueItem";
@@ -9,19 +8,19 @@ export default async function PostQueue(searchParams: {
 }) {
   const allPosts = await api.post.getAll.query({
     search: searchParams.search || "",
-    sent: "true",
+    sent: searchParams.sent || "true",
     page: searchParams.page || "",
     sortBy: "sendDate"
   });
   const postsCount = await api.post.count.query({
     search: searchParams.search || "",
-    sent: "true",
+    sent: searchParams.sent || "true",
   });
   return (
     <div className="w-full rounded-md bg-white text-black">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b p-4">
         <h2 className="text-lg font-bold">Post Queue</h2>
-        {/* <PostFilters /> */}
+        <PostFilters />
       </div>
       <div className="w-full overflow-x-auto">
         <table className="w-full text-left">
