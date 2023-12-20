@@ -17,14 +17,14 @@ export default function PostFilters() {
           e.preventDefault();
           if (searchInput.length === 0) {
             if (sent) {
-              return router.push(`/admin/dashboard?sent=${sent}`);
+              return router.push(`/admin/dashboard?${view ? `view=${view}&` : ""}sent=${sent}`);
             }
-            return router.push(`/admin/dashboard`);
+            return router.push(`/admin/dashboard${view ? `view=${view}&` : ""}`);
           }
           router.push(
             sent
-              ? `?search=${searchInput}&sent=${sent}`
-              : `?search=${searchInput}`,
+              ? `?${view ? `view=${view}&` : ""}search=${searchInput}&sent=${sent}`
+              : `?${view ? `view=${view}&` : ""}search=${searchInput}`,
           );
         }}
       >
