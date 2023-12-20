@@ -28,6 +28,6 @@ Send Post:
 Schedule Post:
 ![Schedule Send Post](https://github.com/mcohen2000/sms-feed/assets/65527695/c6659976-e0c4-4560-9bfa-3f40ec043359)
 ### Post Queue
-![Queue](https://github.com/mcohen2000/sms-feed/assets/65527695/e7ebdf48-d923-42e7-a570-b2d722d8c81a)
+![Queue](https://github.com/mcohen2000/sms-feed/assets/65527695/e6fdc9e5-e327-4112-b493-a56d6d9c02ab)
 ### Post Analytics
 ![Analytics](https://github.com/mcohen2000/sms-feed/assets/65527695/815b6ecb-d00d-41ab-8292-332304429161)
