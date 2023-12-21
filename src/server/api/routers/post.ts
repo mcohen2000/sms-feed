@@ -249,7 +249,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string().min(1),
-        text: z.string().min(1),
+        text: z.string().min(1).max(1530),
       }),
     )
     .mutation(async ({ ctx, input }) => {
