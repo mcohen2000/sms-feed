@@ -10,6 +10,7 @@ This is a [T3 Stack](https://create.t3.gg/) project designed to empower individu
 - [PostgreSQL](https://www.postgresql.org)
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
+- [Zod](https://zod.dev)
 - [Twilio](https://www.twilio.com)
 
 ## Dashboard
