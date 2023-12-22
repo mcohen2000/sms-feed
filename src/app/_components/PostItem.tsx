@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import DeletePostModal from "./DeletePostModal";
 import SendPostModal from "./SendPostModal";
-type PostWithSent = Prisma.PostGetPayload<{ include: { OutboundWebhook: true } }>;
+type PostWithSent = Prisma.PostGetPayload<{
+  include: { OutboundWebhook: true };
+}>;
 
 export default function PostItem(props: { post: PostWithSent }) {
   const post = props.post;
@@ -37,7 +39,7 @@ export default function PostItem(props: { post: PostWithSent }) {
   }, [text]);
   return (
     <li
-      className={`flex w-full flex-col items-start justify-between gap-4 truncate border-b px-4 py-4 text-left`}
+      className={`flex w-full flex-col items-start justify-between gap-4 border-b px-4 py-4 text-left`}
     >
       {isSending ? (
         <SendPostModal
@@ -91,10 +93,23 @@ export default function PostItem(props: { post: PostWithSent }) {
       ) : (
         <>
           <p
-            className="w-full truncate"
+            className="line-clamp-3 w-full"
             title={text !== post.text ? "Updating..." : post.text}
           >
-            {text !== post.text ? "Updating..." : post.text}
+            {text !== post.text
+              ? "Updating..."
+              : post.text.includes("\n")
+                ? post.text.split("\n").map((text, index) =>
+                    index === post.text.split("\n").length - 1 ? (
+                      <>{text}</>
+                    ) : (
+                      <>
+                        {text}
+                        <br />
+                      </>
+                    ),
+                  )
+                : post.text}
           </p>
           <span className="flex gap-1 self-center pl-1">
             <button
