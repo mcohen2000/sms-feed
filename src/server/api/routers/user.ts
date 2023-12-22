@@ -66,43 +66,88 @@ export const userRouter = createTRPCRouter({
         },
       });
       const welcomePost = await ctx.db.post.findFirst({
-        where: {isWelcomeMsg: true}
+        where: { isWelcomeMsg: true },
+      });
+      const scheduledPosts = await ctx.db.post.findMany({
+        where: {
+          isWelcomeMsg: false,
+          OutboundWebhook: {
+            some: { smsStatus: "scheduled" },
+          },
+        },
       });
       const twilioClient = twilio(
         process.env.TWILIO_ACCOUNT_SID,
         process.env.TWILIO_AUTH_TOKEN,
       );
-      if (welcomePost){
 
-        return twilioClient.messages
-        .create({
-          body: welcomePost.text,
-          to: input.phone,
-          messagingServiceSid: process.env.TWILIO_SERVICE_SID,
-        })
-        .then(async (message) => {
-          const outboundWebhook = await ctx.db.outboundWebhook.create({
-            include: {
-              subscriber: true,
-            },
-            data: {
-              apiVersion: message.apiVersion,
-              smsSid: message.sid,
-              smsStatus: message.status,
-              to: message.to,
-              from: message.from,
-              subscriber: { connect: { id: newSubscriber.id } },
-              post: {connect: {id: welcomePost.id}},              
-            },
+      if (welcomePost) {
+        twilioClient.messages
+          .create({
+            body: welcomePost.text,
+            to: input.phone,
+            messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+          })
+          .then(async (message) => {
+            const outboundWebhook = await ctx.db.outboundWebhook.create({
+              include: {
+                subscriber: true,
+              },
+              data: {
+                apiVersion: message.apiVersion,
+                smsSid: message.sid,
+                smsStatus: message.status,
+                to: message.to,
+                from: message.from,
+                subscriber: { connect: { id: newSubscriber.id } },
+                post: { connect: { id: welcomePost.id } },
+              },
+            });
+            await ctx.db.subscriber.update({
+              where: { id: newSubscriber.id },
+              include: { OutboundWebhook: true },
+              data: {
+                OutboundWebhook: { connect: { id: outboundWebhook.id } },
+              },
+            });
           });
-          await ctx.db.subscriber.update({
-            where: { id: newSubscriber.id },
-            include: { OutboundWebhook: true },
-            data: {
-              OutboundWebhook: { connect: { id: outboundWebhook.id } },
-            },
+        if (scheduledPosts.length > 0) {
+          scheduledPosts.forEach((post) => {
+            if (post.sendDate) {
+              twilioClient.messages
+                .create({
+                  body: post.text,
+                  scheduleType: "fixed",
+                  sendAt: post.sendDate,
+                  to: input.phone,
+                  messagingServiceSid: process.env.TWILIO_SERVICE_SID,
+                })
+                .then(async (message) => {
+                  const outboundWebhook = await ctx.db.outboundWebhook.create({
+                    include: {
+                      subscriber: true,
+                    },
+                    data: {
+                      apiVersion: message.apiVersion,
+                      smsSid: message.sid,
+                      smsStatus: message.status,
+                      to: message.to,
+                      from: message.from,
+                      subscriber: { connect: { id: newSubscriber.id } },
+                      post: { connect: { id: post.id } },
+                    },
+                  });
+                  await ctx.db.subscriber.update({
+                    where: { id: newSubscriber.id },
+                    include: { OutboundWebhook: true },
+                    data: {
+                      OutboundWebhook: { connect: { id: outboundWebhook.id } },
+                    },
+                  });
+                });
+            }
           });
-        });
+        }
       }
     }),
   subscriberCount: protectedProcedure.query(async ({ ctx }) => {
