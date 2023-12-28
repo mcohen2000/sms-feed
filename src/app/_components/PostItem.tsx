@@ -101,12 +101,12 @@ export default function PostItem(props: { post: PostWithSent }) {
               : post.text.includes("\n")
                 ? post.text.split("\n").map((text, index) =>
                     index === post.text.split("\n").length - 1 ? (
-                      <>{text}</>
+                      <span key={index}>{text}</span>
                     ) : (
-                      <>
+                      <span key={index}>
                         {text}
                         <br />
-                      </>
+                      </span>
                     ),
                   )
                 : post.text}
