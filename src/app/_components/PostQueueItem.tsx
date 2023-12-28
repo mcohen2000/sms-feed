@@ -21,10 +21,24 @@ export default function PostQueueItem(props: { post: PostWithSent }) {
         {post.sendDate?.toLocaleString()}
       </td>
       <td
-        className="w-[400px] min-w-[400px] max-w-[400px] truncate px-4 py-3"
+        className="w-full min-w-[400px] px-4 py-3"
         title={post.text}
       >
-        {post.text}
+        <span className="line-clamp-3">
+
+        {post.text.includes("\n")
+                ? post.text.split("\n").map((text, index) =>
+                index === post.text.split("\n").length - 1 ? (
+                  <span key={index}>{text}</span>
+                  ) : (
+                    <span key={index}>
+                        {text}
+                        <br />
+                      </span>
+                    ),
+                    )
+                    : post.text}
+                    </span>
       </td>
       <td className="w-[100px] min-w-[100px] max-w-[100px] px-4 py-3">
         {post.OutboundWebhook.some(item => item.smsStatus ===
