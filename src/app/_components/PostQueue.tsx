@@ -33,7 +33,7 @@ export default async function PostQueue(searchParams: {
               <th className="w-[400px] min-w-[400px] max-w-[400px] truncate px-4 py-3">
                 Body
               </th>
-              <th className="w-[100px] min-w-[100px] px-4 py-3">Status</th>
+              <th className="w-[130px] min-w-[130px] px-4 py-3">Status</th>
               <th className="w-[100px] min-w-[100px] px-4 py-3"># Delivered</th>
               {/* </div> */}
             </tr>
