@@ -71,7 +71,7 @@ export default function PostQueueItem(props: { post: PostWithSent }) {
           </span>
         )}
       </td>
-      <td className="w-[100px] min-w-[100px] max-w-[100px] px-4 py-3">
+      <td className="w-[130px] min-w-[130px] max-w-[130px] px-4 py-3">
         {
           post.OutboundWebhook.filter((item) => item.smsStatus === "delivered")
             .length
