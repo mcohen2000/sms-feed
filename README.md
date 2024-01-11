@@ -27,8 +27,7 @@ This is a [T3 Stack](https://create.t3.gg/) project designed to empower individu
 | send               | Mutation       | Triggers twilio.messages.create for each subscriber on post where "id: input.id". If schedule argument is included, then the schedule date is validated before scheduling the messages. When messages are successfully sent or scheduled, an outboundWebhook is created in the database. The post and subscribers are linked to the outboundWebhooks.  | <ul><li>id: String<br/>(Min Length: 1)</li><li>schedule: String<br/>(Min Length: 1)</li></ul>|
 
 Overview:
-
-![Posts](https://github.com/mcohen2000/sms-feed/assets/65527695/5fcfa52e-d5e7-4f40-a09a-d10c584c9e23)
+![Posts](https://github.com/mcohen2000/sms-feed/assets/65527695/7d1c0588-76a9-4120-8120-513167ac0b5f)
 Set Welcome Message:
 ![Set Welcome Message](https://github.com/mcohen2000/sms-feed/assets/65527695/bbab7aff-5b26-43e9-bfb1-c497dd8431fd)
 Edit Post:
@@ -48,7 +47,8 @@ Schedule Post:
 | updateOutboundWebhook | Mutation       | Triggered by Twilio HTTP webhooks to update the status of outboundWebhooks.  | <ul><li>smsSid: String<br/>(Min Length: 1)</li><li>status: String</li><li>from: String<br/>(Nullable - Not included until status === "delivered")</li><li>doneDate: String<br/>(Nullable - Not included until status === "delivered")</li></ul>|
 | handleInboundWebhook | Mutation       | Triggered by Twilio HTTP webhooks to process inbound SMS messages sent to Twilio phone number. Allows subscribers to toggle subscription / optedOut field on subscriber model.   | <ul><li>smsSid: String<br/>(Min Length: 1)</li><li>numMedia: Number</li><li>numSegments: Number</li><li>body: String</li><li>to: String</li><li>from: String</li><li>optOutType: String</li><li>status: String</li><li>toCountry: String</li><li>toState: String</li><li>toCity: String</li><li>toZip: String</li><li>fromState: String</li><li>fromCity: String</li><li>fromZip: String</li></ul>|
 
-![Queue](https://github.com/mcohen2000/sms-feed/assets/65527695/e6fdc9e5-e327-4112-b493-a56d6d9c02ab)
+![Queue](https://github.com/mcohen2000/sms-feed/assets/65527695/a6283d07-7680-42f7-85a5-284fbf82b2f5)
+
 ### Post Analytics
 | Name               | Type           | Description                                                                                      | Arguments                                            |
 | :------------------: |:------------:| :-----------------------------------------------------------------------------------------------:| :--------------------------------------------------: |
